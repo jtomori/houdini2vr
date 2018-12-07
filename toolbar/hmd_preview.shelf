@@ -8,6 +8,7 @@
   <toolshelf name="hmd_preview" label="HMD VR Preview">
     <memberTool name="reload"/>
     <memberTool name="plot_img"/>
+    <memberTool name="save_png"/>
   </toolshelf>
 
   <tool name="reload" label="Reload" icon="PLASMA_App">
@@ -18,5 +19,10 @@ reload(hmd_preview)]]></script>
   <tool name="plot_img" label="Plot image" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import hmd_preview
 hmd_preview.plotImage( hmd_preview.getImageData() )]]></script>
+  </tool>
+
+  <tool name="save_png" label="Save as PNG" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import hmd_preview
+hmd_preview.saveImageAsPng( hmd_preview.getImageData() )]]></script>
   </tool>
 </shelfDocument>
