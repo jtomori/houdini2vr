@@ -1,18 +1,26 @@
 """
 Preview your Houdini VR renders in HMD
-
-It takes image from displayed image plane in Render View pane and displays it in your HMD
 """
 
 import os
 import hou
 import base64
+import thread
+import inspect
 import logging
+import requests
+import webbrowser
 import numpy as np
+import SocketServer
 from PIL import Image
+import SimpleHTTPServer
+from pathlib2 import Path
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
+
+web_server_path = "0.0.0.0"
+web_server_port = 8000
 
 def getImageData():
     """
@@ -23,7 +31,6 @@ def getImageData():
         res - tuple of two ints for X and Y image resolution
         pixels - tuple of pixel tuples (4 floats, RGBA), in row-major order starting at the bottom left corner of the image
     """
-
     viewer = hou.ui.paneTabOfType(hou.paneTabType.IPRViewer)
     img_data = {}
     
@@ -70,10 +77,18 @@ def plotImage(img_data):
 
     return
 
-def saveImageAsPng(img_data):
+def saveImageAsPng(img_data, path=None):
     """
-    Saves incoming data as gamma-corrected PNG into $HIP/tmp/tmp.png
+    Saves incoming data as gamma-corrected PNG in specified path, or in $HIP/tmp/tmp.png if not specified
     """
+    if not path:
+        folder_path = Path(hou.getenv("HIP"), "tmp")
+        if not folder_path.exists():
+            os.makedirs(str(folder_path))
+        img_path = folder_path / "tmp.png"
+    else:
+        img_path = path
+
     pixels = img_data["pixels"]
     res = img_data["res"]
 
@@ -84,13 +99,39 @@ def saveImageAsPng(img_data):
 
     pixels *= 255
 
-    folder_path = os.path.join(hou.getenv("HIP"), "tmp")
-    if not os.path.exists(folder_path):
-        os.makedirs(folder_path)
-    img_path = os.path.join(folder_path, "tmp.png")
-
     png_img = Image.fromarray(pixels.astype(np.uint8))
     png_img.save(img_path)
+
+def createServer():
+    handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+    httpd = SocketServer.TCPServer((web_server_path, web_server_port), handler)
+    log.info("Starting web server at port {}".format(web_server_port))
+    httpd.serve_forever()
+
+def showInWebBrowser():
+    """
+    Saves image in a tmp location, launches web server if not already running and launches web-browser which displays render image in VR
+    """
+    root = Path(__file__).parents[2]
+    tmp = root / "tmp" / os.environ["USER"]
+    img = tmp / "tmp.png"
+    img_relative = img.relative_to(root)
+    if not tmp.exists():
+        os.makedirs(str(tmp))
+
+    img_data = getImageData()
+    
+    if img_data:
+        saveImageAsPng(img_data=img_data, path=img)
+
+        try:
+            connection = requests.get("http://{}:{}".format(web_server_path, web_server_port))
+            log.info("Server is already running, status code: {}".format(connection.status_code))
+        except requests.exceptions.ConnectionError:
+            os.chdir(str(root))
+            thread.start_new_thread(createServer, tuple())
+        
+        webbrowser.open_new_tab(url="http://{path}:{port}/web/?img_path={img}".format(path=web_server_path, port=web_server_port, img="/" + str(img_relative)))
 
 def encodeImage(img_data):
     """

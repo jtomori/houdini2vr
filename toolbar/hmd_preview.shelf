@@ -9,6 +9,7 @@
     <memberTool name="reload"/>
     <memberTool name="plot_img"/>
     <memberTool name="save_png"/>
+    <memberTool name="show_in_browser"/>
   </toolshelf>
 
   <tool name="reload" label="Reload" icon="PLASMA_App">
@@ -24,5 +25,10 @@ hmd_preview.plotImage( hmd_preview.getImageData() )]]></script>
   <tool name="save_png" label="Save as PNG" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import hmd_preview
 hmd_preview.saveImageAsPng( hmd_preview.getImageData() )]]></script>
+  </tool>
+
+  <tool name="show_in_browser" label="Show in browser" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import hmd_preview
+hmd_preview.showInWebBrowser()]]></script>
   </tool>
 </shelfDocument>
