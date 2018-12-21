@@ -7,15 +7,14 @@
 
         <title>Houdini HMD Preview</title>
 
-        <link href="style.css" rel="stylesheet">
         <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
-        <script src="hmd_preview.js" defer></script>
+        <script src="components.js"></script>
+        <script src="shaders.js"></script>
     </head>
 
     <body>
-        <a-scene>
-            <a-sky color="#000000"></a-sky>
-            <a-sky id="map" transparent="true" src="" rotation="0 0 0"></a-sky>
+        <a-scene background="color: black" light="defaultLightsEnabled: false">
+            <a-sky id="map" transparent="true" load-map vr-material></a-sky>
         </a-scene>
     </body>
 

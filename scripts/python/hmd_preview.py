@@ -19,8 +19,36 @@ from pathlib2 import Path
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-web_server_path = "0.0.0.0"
+web_server_path = "127.0.0.1"
 web_server_port = 8000
+
+def getCameraInfo(viewer):
+    """
+    Returns a dictionary with information about camera rendering in passed IPR:
+        layout: integer representing camera layout
+            0: left - right
+            1: top - bottom
+    
+    default values are 0 - if ROP node was not implemented (parm names change between renderers)
+    """
+    rop_node = viewer.ropNode()
+    cam_node = rop_node.parm("camera").evalAsNode()
+    
+    out_dict = {
+        "layout"    :       0,
+        "stereo"    :       0
+    }
+
+    if rop_node.type().name() == "ifd": # Mantra
+        layout = cam_node.parm("vrlayout").eval()
+
+        out_dict["layout"] = layout
+        if layout < 2:
+            out_dict["stereo"] = 1
+    else: # Not implemented warning
+        log.warning("ROP node is not implemented")
+    
+    return out_dict
 
 def getImageData():
     """
@@ -30,6 +58,7 @@ def getImageData():
         img_plane - string with name of displayed image plane
         res - tuple of two ints for X and Y image resolution
         pixels - tuple of pixel tuples (4 floats, RGBA), in row-major order starting at the bottom left corner of the image
+        layout - an integer representing camera layout
     """
     viewer = hou.ui.paneTabOfType(hou.paneTabType.IPRViewer)
     img_data = {}
@@ -42,11 +71,14 @@ def getImageData():
             log.warning("No image planes found, is your scene rendered?")
             return None
         else:
+            cam_info = getCameraInfo(viewer)
             img_plane = viewer.displayedPlane()
             
             img_data["img_plane"] = img_plane
             img_data["res"] = viewer.imageResolution()
             img_data["pixels"] = viewer.pixels(img_plane)
+            img_data["layout"] = cam_info["layout"]
+            img_data["stereo"] = cam_info["stereo"]
 
             return img_data
 
@@ -103,6 +135,9 @@ def saveImageAsPng(img_data, path=None):
     png_img.save(img_path)
 
 def createServer():
+    """
+    Starts a simple httpserver at specified address and port (specified through global vars)
+    """
     handler = SimpleHTTPServer.SimpleHTTPRequestHandler
     httpd = SocketServer.TCPServer((web_server_path, web_server_port), handler)
     log.info("Starting web server at port {}".format(web_server_port))
@@ -131,7 +166,7 @@ def showInWebBrowser():
             os.chdir(str(root))
             thread.start_new_thread(createServer, tuple())
         
-        webbrowser.open_new_tab(url="http://{path}:{port}/web/?img_path={img}".format(path=web_server_path, port=web_server_port, img="/" + str(img_relative)))
+        webbrowser.open_new_tab(url="http://{path}:{port}/web/index.html?img_path={img}&left_right_or_top_bottom={layout}&stereo={stereo}".format( path=web_server_path, port=web_server_port, img="/" + str(img_relative), layout=img_data["layout"],stereo=img_data["stereo"] ))
 
 def encodeImage(img_data):
     """
