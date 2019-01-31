@@ -8,7 +8,7 @@ import base64
 import thread
 import inspect
 import logging
-import requests
+import urllib2
 import webbrowser
 import numpy as np
 import SocketServer
@@ -19,7 +19,7 @@ from pathlib2 import Path
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-web_server_path = "127.0.0.1"
+web_server_address = "127.0.0.1"
 web_server_port = 8000
 
 def getCameraInfo(viewer):
@@ -132,14 +132,27 @@ def saveImageAsPng(img_data, path=None):
     pixels *= 255
 
     png_img = Image.fromarray(pixels.astype(np.uint8))
-    png_img.save(img_path)
+    png_img.save(str(img_path))
+    log.info("Saving image into {}".format(str(img_path)))
 
-def createServer():
+def isServerRunning():
+    """
+    Checks whether server is running or not
+    returns True if connection can be made or False if not
+    """
+    try:
+        os.environ["no_proxy"] = "127.0.0.1,localhost" # fixes a problem when behing a proxy
+        urllib2.urlopen("http://{}:{}".format(web_server_address, web_server_port), timeout=1)
+        return True
+    except urllib2.URLError: 
+        return False
+
+def startServer():
     """
     Starts a simple httpserver at specified address and port (specified through global vars)
     """
     handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-    httpd = SocketServer.TCPServer((web_server_path, web_server_port), handler)
+    httpd = SocketServer.TCPServer((web_server_address, web_server_port), handler)
     log.info("Starting web server at port {}".format(web_server_port))
     httpd.serve_forever()
 
@@ -159,14 +172,14 @@ def showInWebBrowser():
     if img_data:
         saveImageAsPng(img_data=img_data, path=img)
 
-        try:
-            connection = requests.get("http://{}:{}".format(web_server_path, web_server_port))
-            log.info("Server is already running, status code: {}".format(connection.status_code))
-        except requests.exceptions.ConnectionError:
+        if isServerRunning():
+            log.info("Server is running")
+        else:
+            log.info("Server is not running, starting...")
             os.chdir(str(root))
-            thread.start_new_thread(createServer, tuple())
+            thread.start_new_thread(startServer, tuple())
         
-        webbrowser.open_new_tab(url="http://{path}:{port}/web/index.html?img_path={img}&left_right_or_top_bottom={layout}&stereo={stereo}".format( path=web_server_path, port=web_server_port, img="/" + str(img_relative), layout=img_data["layout"],stereo=img_data["stereo"] ))
+        webbrowser.open_new_tab(url="http://{address}:{port}/web/index.html?img_path={img}&left_right_or_top_bottom={layout}&stereo={stereo}".format( address=web_server_address, port=web_server_port, img="/" + str(img_relative).replace("\\", "/"), layout=img_data["layout"],stereo=img_data["stereo"] ))
 
 def encodeImage(img_data):
     """

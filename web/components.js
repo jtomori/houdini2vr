@@ -1,13 +1,11 @@
-AFRAME.registerComponent('load-map', {
+AFRAME.registerComponent("load-map", {
     /*
     Reads img_path parameter from url and sets its value to src property of material component - assigns a texture
     */
     init: function () {
         // get img_path parameter from url
-        var url_string = window.location.href;
-        var url = new URL(url_string);
-        var img_path = url.searchParams.get("img_path");
-        
+        var img_path = AFRAME.utils.getUrlParameter("img_path");
+
         // check if img_path parameter was found
         if (img_path === null)
             console.error("img_path parameter not found in url");
@@ -20,17 +18,15 @@ AFRAME.registerComponent('load-map', {
     }
 });
 
-AFRAME.registerComponent('vr-material', {
+AFRAME.registerComponent("vr-material", {
     /*
     Sets entity's shader to vr-map and sets left_right_or_top_bottom and left_or_right properties based on parameters in url
     */
     init: function () {
         // get parameters from url
-        var url_string = window.location.href;
-        var url = new URL(url_string);
-        var left_right_or_top_bottom = url.searchParams.get("left_right_or_top_bottom");
-        var left_or_right = url.searchParams.get("left_or_right");
-        var stereo = url.searchParams.get("stereo");
+        var left_right_or_top_bottom = AFRAME.utils.getUrlParameter("left_right_or_top_bottom");
+        var left_or_right = AFRAME.utils.getUrlParameter("left_or_right");
+        var stereo = AFRAME.utils.getUrlParameter("stereo");
         
         // set shader to vr-map
         var el = this.el;
