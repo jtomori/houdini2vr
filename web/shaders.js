@@ -1,4 +1,4 @@
-AFRAME.registerShader('uv-show', {
+AFRAME.registerShader("uv-show", {
     /*
     A simple debug shader showing UV coordinates as colors
     */
@@ -21,15 +21,15 @@ AFRAME.registerShader('uv-show', {
     `
 });
 
-AFRAME.registerShader('vr-map', {
+AFRAME.registerShader("vr-map", {
     /*
     Shader to display offline VR renders which contain both eyes in one texture
     */
     schema: {
-        src:                        {type: 'map', is: 'uniform'},
-        stereo:                     {type: 'int', is: 'uniform'},
-        left_right_or_top_bottom:   {type: 'int', is: 'uniform'},
-        left_or_right:              {type: 'int', is: 'uniform'}
+        src:                        {type: "map", is: "uniform"},
+        stereo:                     {type: "int", is: "uniform"},
+        left_right_or_top_bottom:   {type: "int", is: "uniform"},
+        left_or_right:              {type: "int", is: "uniform"}
     },
     raw: true,
     vertexShader: `

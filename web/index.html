@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-    
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
         <title>Houdini HMD Preview</title>
-
         <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
         <script src="components.js"></script>
         <script src="shaders.js"></script>
     </head>
-
     <body>
-        <a-scene background="color: black" light="defaultLightsEnabled: false">
-            <a-entity  id="cam" camera look-controls position="0 0 0"></a-entity>
-            <a-sky id="map" transparent="true" load-map vr-material></a-sky>
+        <a-scene id="root_scene" background="color: black" light="defaultLightsEnabled: false" set-name print-scene-graph>
+            <a-entity id="cam" camera look-controls stereo-cam set-name></a-entity>
+            <a-sky id="sphere_left" transparent="true" load-map vr-material stereo="eye: left" set-name></a-sky>
+            <a-sky id="sphere_right" transparent="true" load-map vr-material stereo="eye: right" set-name></a-sky>
         </a-scene>
     </body>
-
 </html>
