@@ -23,13 +23,13 @@ AFRAME.registerShader("uv-show", {
 
 AFRAME.registerShader("vr-map", {
     /*
-    Shader to display offline VR renders which contain both eyes in one texture
+    Shader to display offline VR renders which contain both eyes in one texture (stereo: 1), or only one eye (stereo: 0)
     */
     schema: {
         src:                        {type: "map", is: "uniform"},
-        stereo:                     {type: "int", is: "uniform"},
-        left_right_or_top_bottom:   {type: "int", is: "uniform"},
-        left_or_right:              {type: "int", is: "uniform"}
+        stereo:                     {type: "int", is: "uniform"}, // 0: mono, 1: stereo
+        layout:                     {type: "int", is: "uniform"}, //  0: horizontal (left-right), 1: vertical (top-bottom)
+        eye:                        {type: "int", is: "uniform"} // 0: left eye, 1: right eye
     },
     raw: true,
     vertexShader: `
@@ -39,27 +39,27 @@ AFRAME.registerShader("vr-map", {
         uniform mat4 projectionMatrix;
         uniform mat4 modelViewMatrix;
         uniform int stereo;
-        uniform int left_right_or_top_bottom;
-        uniform int left_or_right;
+        uniform int layout;
+        uniform int eye;
 
         varying vec2 vUv;
 
         void main() {
             float offset = 0.0;
-            if (left_or_right == 0)
+            if (eye == 0)
                 offset = 0.0;
-            else if (left_or_right == 1)
+            else if (eye == 1)
                 offset = 0.5;
 
             if (stereo == 1)
             {
-                if (left_right_or_top_bottom == 0)
+                if (layout == 0)
                 {
                     vUv = vec2(uv.x/2.0+offset, uv.y);
                 }
-                else if (left_right_or_top_bottom == 1)
+                else if (layout == 1)
                 {
-                    vUv = vec2(uv.x, uv.y/2.0+offset);
+                    vUv = vec2(uv.x, uv.y/2.0+(0.5-offset));
                 }
             }
             if (stereo == 0)

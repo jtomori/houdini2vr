@@ -26,8 +26,8 @@ def getCameraInfo(viewer):
     """
     Returns a dictionary with information about camera rendering in passed IPR:
         layout: integer representing camera layout
-            0: left - right
-            1: top - bottom
+            0: horizontal (left - right)
+            1: vertical (top - bottom)
     
     default values are 0 - if ROP node was not implemented (parm names change between renderers)
     """
@@ -179,7 +179,7 @@ def showInWebBrowser():
             os.chdir(str(root))
             thread.start_new_thread(startServer, tuple())
         
-        webbrowser.open_new_tab(url="http://{address}:{port}/web/index.html?img_path={img}&left_right_or_top_bottom={layout}&stereo={stereo}".format( address=web_server_address, port=web_server_port, img="/" + str(img_relative).replace("\\", "/"), layout=img_data["layout"],stereo=img_data["stereo"] ))
+        webbrowser.open_new_tab(url="http://{address}:{port}/web/index.html?img_path={img}&layout={layout}&stereo={stereo}".format( address=web_server_address, port=web_server_port, img="/" + str(img_relative).replace("\\", "/"), layout=img_data["layout"],stereo=img_data["stereo"] ))
 
 def encodeImage(img_data):
     """

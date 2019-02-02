@@ -19,12 +19,11 @@ AFRAME.registerComponent("load-map", {
 
 AFRAME.registerComponent("vr-material", {
     /*
-    Sets entity's shader to vr-map and sets left_right_or_top_bottom and left_or_right properties based on parameters in url
+    Sets entity's shader to vr-map and sets layout and stereo properties on material (used by vr-map shader)
     */
     init: function () {
         // get parameters from url
-        var left_right_or_top_bottom = AFRAME.utils.getUrlParameter("left_right_or_top_bottom");
-        var left_or_right = AFRAME.utils.getUrlParameter("left_or_right");
+        var layout = AFRAME.utils.getUrlParameter("layout");
         var stereo = AFRAME.utils.getUrlParameter("stereo");
         
         // set shader to vr-map
@@ -33,20 +32,71 @@ AFRAME.registerComponent("vr-material", {
 
         // check if parameters were found and modify material properties
         if (stereo === "")
-            console.warn("stereo parameter was not found in url");
+        {
+            console.warn("stereo parameter was not found in the url, assuming mono mode (the same as stereo=0)");
+            el.setAttribute("material", "stereo", 0);
+        }
         else
             el.setAttribute("material", "stereo", stereo);
 
-        if (stereo === "1" && left_right_or_top_bottom === "")
-            console.warn("stereo is enabled and left_right_or_top_bottom parameter was not found in url");
+        if (stereo === "1" && layout === "" )
+            console.warn("stereo is enabled and layout parameter was not found in the url");
         else
-            el.setAttribute("material", "left_right_or_top_bottom", left_right_or_top_bottom);
+        {
+            el.setAttribute("material", "layout", layout);
+        }
+    }
+});
 
-        // left_or_right is optional and used more for debugging
-        if (left_or_right === "")
-            console.log("left_or_right parameter was not found in url");
-        else
-            el.setAttribute("material", "left_or_right", left_or_right);
+AFRAME.registerComponent("stereo", {
+    /*
+    Sets eye property on material (used by vr-map shader) for corresponding eye and assigns it to the expected layer (used by stereo camera rig in VR mode)
+    */
+    schema: {
+        eye:    {type: "string", default: "left"}
+    },
+    update: function (old_data) {
+        var data = this.data;
+        var el = this.el;
+        
+        if (data.eye !== old_data.eye)
+        {
+            var object_3D = this.el.object3D.children[0];
+            
+            // move (and disable all other layers, e.g. default 0) to layer 1 for left eye and 2 for right eye
+            if (data.eye === "left")
+            {
+                object_3D.layers.set(1);
+                el.setAttribute("material", "eye", 0);
+            }
+            else if (data.eye === "right")
+            {
+                object_3D.layers.set(2);
+                el.setAttribute("material", "eye", 1);
+            }
+            
+            console.log(`Eye set on "${this.el.id}" to "${this.data.eye}"`);
+        }
+    }
+});
+
+AFRAME.registerComponent("stereo-cam", {
+    /*
+    Assigns mono camera (in non-VR mode) to layers - lets you enable which objects to see
+    */
+    init: function () {
+        var children_types = [];
+
+        this.el.object3D.children.forEach( function (item, index, array) {
+            children_types[index] = item.type;
+        });
+
+        var root_index = children_types.indexOf("PerspectiveCamera");
+        var rootCam = this.el.object3D.children[root_index];
+        
+        // add layers 1 and 2 to the camera (0 is on by default)
+        rootCam.layers.enable(1);
+        rootCam.layers.enable(2);
     }
 });
 
@@ -87,48 +137,3 @@ function print_graph(obj) {
     obj.children.forEach( print_graph );
     console.groupEnd();
 };
-
-AFRAME.registerComponent("stereo", {
-    /*
-    TBD
-    */
-    schema: {
-        eye:    {type: "string", default: "left"}
-    },
-    update: function (old_data) {
-        var data = this.data;
-        
-        if (data.eye !== old_data.eye)
-        {
-            var object_3D = this.el.object3D.children[0];
-            
-            // move (and disable all other layers, e.g. default 0) to layer 1 for left eye and 2 for right eye
-            if (data.eye === "left")
-                object_3D.layers.set(1);
-            else if (data.eye === "right")
-                object_3D.layers.set(2);
-
-            console.log(`Eye set on "${this.el.id}" to "${this.data.eye}"`);
-        }
-    }
-});
-
-AFRAME.registerComponent("stereo-cam", {
-    /*
-    TBD
-    */
-    init: function () {
-        var children_types = [];
-
-        this.el.object3D.children.forEach( function (item, index, array) {
-            children_types[index] = item.type;
-        });
-
-        var root_index = children_types.indexOf("PerspectiveCamera");
-        var rootCam = this.el.object3D.children[root_index];
-        
-        // add layers 1 and 2 to the camera (0 is on by default)
-        rootCam.layers.enable(1);
-        rootCam.layers.enable(2);
-    }
-});
