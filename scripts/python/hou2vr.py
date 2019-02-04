@@ -33,20 +33,35 @@ def getCameraInfo(viewer):
     
     default values are 0 - if ROP node was not implemented (parm names change between renderers)
     """
-    rop_node = viewer.ropNode()
-    cam_node = rop_node.parm("camera").evalAsNode()
     
     out_dict = {
         "layout"    :       0,
         "stereo"    :       0
     }
 
-    if rop_node.type().name() == "ifd": # Mantra
+    rop_node = viewer.ropNode()
+
+    if rop_node.type().name() == "ifd" or rop_node.type().name() == "arnold": # Mantra / Arnold - they use the same camera and parameters
+        cam_node = rop_node.parm("camera").evalAsNode()
         layout = cam_node.parm("vrlayout").eval()
 
         out_dict["layout"] = layout
         if layout < 2:
             out_dict["stereo"] = 1
+
+    elif rop_node.type().name() == "Redshift_ROP" or rop_node.type().name() == "Redshift_IPR": # Redshift
+        if rop_node.parm("linked_rop").eval() == "":
+            log.warning("Redshift_IPR node has empty Linked ROP parameter.")
+            return out_dict
+
+        cam_node = rop_node.parm("linked_rop").evalAsNode().parm("RS_renderCamera").evalAsNode()
+
+        layout = cam_node.parm("RS_campro_stereoMode").eval()
+
+        out_dict["layout"] = layout
+        if layout < 2:
+            out_dict["stereo"] = 1
+
     else: # Not implemented warning
         log.warning("ROP node is not implemented")
     
@@ -109,7 +124,7 @@ def plotImage(img_data):
 
     pixels = np.array(pixels)
     pixels = pixels.reshape(res[1], res[0], 4)
-    pixels = np.flip(pixels, 0)
+    pixels = np.flipud(pixels)
 
     pixels[:,:,:3] = pixels[:,:,:3]**(1/2.2)
 
@@ -139,9 +154,10 @@ def saveImageAsPng(img_data, path=None):
 
     pixels = np.array(pixels)
     pixels = pixels.reshape(res[1], res[0], 4)
-    pixels = np.flip(pixels, 0)
+    pixels = np.flipud(pixels)
 
     pixels *= 255
+    pixels = np.clip(pixels, 0, 255) # does firefox support any hdr/float image format?
 
     png_img = Image.fromarray(pixels.astype(np.uint8))
     png_img.save(str(img_path))
