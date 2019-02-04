@@ -5,30 +5,36 @@
  Note, that two definitions of the same element are not allowed in
  a single file. -->
 
-  <toolshelf name="hmd_preview" label="HMD VR Preview">
+  <toolshelf name="hou2vr" label="Houdini 2 VR">
     <memberTool name="reload"/>
     <memberTool name="plot_img"/>
     <memberTool name="save_png"/>
     <memberTool name="show_in_browser"/>
+    <memberTool name="test_thread"/>
   </toolshelf>
 
   <tool name="reload" label="Reload" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[import hmd_preview
-reload(hmd_preview)]]></script>
+    <script scriptType="python"><![CDATA[import hou2vr
+reload(hou2vr)]]></script>
   </tool>
 
   <tool name="plot_img" label="Plot image" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[import hmd_preview
-hmd_preview.plotImage( hmd_preview.getImageData() )]]></script>
+    <script scriptType="python"><![CDATA[import hou2vr
+hou2vr.plotImage( hou2vr.getImageData() )]]></script>
   </tool>
 
   <tool name="save_png" label="Save as PNG" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[import hmd_preview
-hmd_preview.saveImageAsPng( hmd_preview.getImageData() )]]></script>
+    <script scriptType="python"><![CDATA[import hou2vr
+hou2vr.saveImageAsPng( hou2vr.getImageData() )]]></script>
   </tool>
 
   <tool name="show_in_browser" label="Show in browser" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[import hmd_preview
-hmd_preview.showInWebBrowser()]]></script>
+    <script scriptType="python"><![CDATA[import hou2vr
+hou2vr.showInWebBrowser()]]></script>
+  </tool>
+
+  <tool name="test_thread" label="test thread" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import hou2vr
+hou2vr.testCommand()]]></script>
   </tool>
 </shelfDocument>

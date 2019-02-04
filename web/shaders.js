@@ -28,8 +28,9 @@ AFRAME.registerShader("vr-map", {
     schema: {
         src:                        {type: "map", is: "uniform"},
         stereo:                     {type: "int", is: "uniform"}, // 0: mono, 1: stereo
-        layout:                     {type: "int", is: "uniform"}, //  0: horizontal (left-right), 1: vertical (top-bottom)
-        eye:                        {type: "int", is: "uniform"} // 0: left eye, 1: right eye
+        layout:                     {type: "int", is: "uniform"}, // 0: horizontal (left-right), 1: vertical (top-bottom)
+        eye:                        {type: "int", is: "uniform"}, // 0: left eye, 1: right eye
+        gamma_correct:              {type: "int", is: "uniform", default: 1} // 0: disabled, 1: enabled
     },
     raw: true,
     vertexShader: `
@@ -70,13 +71,21 @@ AFRAME.registerShader("vr-map", {
     `,
     fragmentShader: `
         precision highp float;
+        
         uniform sampler2D src;
+        uniform int gamma_correct;
+        
         varying vec2 vUv;
 
         void main () {
             vec2 uv = vUv;
             vec4 texColor = texture2D(src, uv);
-            gl_FragColor = texColor;
+            vec3 texColorCorrected = texColor.xyz;
+
+            if (gamma_correct == 1)
+                texColorCorrected = pow(texColor.xyz, vec3(1.0/2.2));
+
+            gl_FragColor = vec4(texColorCorrected, texColor.w);
         }
     `
 });

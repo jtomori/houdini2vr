@@ -1,6 +1,6 @@
-# Preview Houdini VR renders in HMD
-It takes image from displayed image plane in Render View pane and displays it in your HMD
-
+# Houdini 2 VR
+## Preview Houdini VR renders in HMD
+It takes image from displayed image plane in Render View pane and displays it in your HMD.
 
 ### Setup
 * Add this repository into **HOUDINI_PATH** environment variable (e.g. in *houdini.env* file)
