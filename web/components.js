@@ -100,6 +100,52 @@ AFRAME.registerComponent("stereo-cam", {
     }
 });
 
+AFRAME.registerComponent("ui", {
+    /*
+    Displays dat.gui interface which controls shader properties of left and right eye spheres
+    */
+    init: function () {
+        // fetch sphere entities
+        var sphere_left = document.querySelector('#sphere_left');
+        var sphere_right = document.querySelector('#sphere_right');
+
+        var gui = new dat.GUI();
+
+        // create controls object containing parameters
+        var controls = {
+            gamma_correct: true,
+            exposure: 0,
+            reset: function() {
+                this.exposure = 0;
+                this.gamma_correct = true;
+              }
+        };
+
+        gui.add(controls, "exposure").min(-4).max(4).name("Exposure").step(0.01).onChange(function() {
+            sphere_left.setAttribute("material", "exposure", controls.exposure);
+            sphere_right.setAttribute("material", "exposure", controls.exposure);
+         });
+
+        gui.add(controls, "gamma_correct").name("Gamma Correct").onChange(function() {
+            sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
+            sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
+         });
+
+         gui.add(controls, "reset").name("Reset").onFinishChange(function() {
+            // set properties on spheres entities
+            sphere_left.setAttribute("material", "exposure", controls.exposure);
+            sphere_right.setAttribute("material", "exposure", controls.exposure);
+            sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
+            sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
+            
+            // update ui display
+            for (var i in gui.__controllers) {
+                gui.__controllers[i].updateDisplay();
+            }
+         });
+    }
+});
+
 AFRAME.registerComponent("print-layers", {
     /*
     Prints layer mask, layers numbering is going from right to left

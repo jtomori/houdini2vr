@@ -6,35 +6,39 @@
  a single file. -->
 
   <toolshelf name="hou2vr" label="Houdini 2 VR">
-    <memberTool name="reload"/>
-    <memberTool name="plot_img"/>
     <memberTool name="save_png"/>
     <memberTool name="show_in_browser"/>
-    <memberTool name="test_thread"/>
+    <memberTool name="start_auto_save"/>
+    <memberTool name="stop_auto_save"/>
   </toolshelf>
-
-  <tool name="reload" label="Reload" icon="PLASMA_App">
-    <script scriptType="python"><![CDATA[import hou2vr
-reload(hou2vr)]]></script>
-  </tool>
 
   <tool name="plot_img" label="Plot image" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import hou2vr
+reload(hou2vr)
 hou2vr.plotImage( hou2vr.getImageData() )]]></script>
   </tool>
 
   <tool name="save_png" label="Save as PNG" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import hou2vr
+reload(hou2vr)
 hou2vr.saveImageAsPng( hou2vr.getImageData() )]]></script>
   </tool>
 
   <tool name="show_in_browser" label="Show in browser" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import hou2vr
+reload(hou2vr)
 hou2vr.showInWebBrowser()]]></script>
   </tool>
 
-  <tool name="test_thread" label="test thread" icon="PLASMA_App">
+  <tool name="start_auto_save" label="Start auto save" icon="PLASMA_App">
     <script scriptType="python"><![CDATA[import hou2vr
-hou2vr.testCommand()]]></script>
+reload(hou2vr)
+hou2vr.startAutoSave()]]></script>
+  </tool>
+
+  <tool name="stop_auto_save" label="Stop auto save" icon="PLASMA_App">
+    <script scriptType="python"><![CDATA[import hou2vr
+reload(hou2vr)
+hou2vr.stopAutoSave()]]></script>
   </tool>
 </shelfDocument>

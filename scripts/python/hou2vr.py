@@ -20,8 +20,10 @@ from threading import Thread
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
+# CONFIG
 web_server_address = "127.0.0.1"
 web_server_port = 8000
+auto_save_interval = 2.0
 
 def getCameraInfo(viewer):
     """
@@ -140,6 +142,8 @@ def plotImage(img_data):
 def saveImageAsPng(img_data, path=None):
     """
     Saves incoming data as PNG in specified path, or in $HIP/tmp/tmp.png if not specified
+    img_data is a dict which is returned from getImageData()
+    path is a Path object
     """
     if not path:
         folder_path = Path(hou.getenv("HIP"), "tmp")
@@ -184,44 +188,72 @@ def startServer():
     log.info("Starting web server at port {}".format(web_server_port))
     httpd.serve_forever()
 
-def testThread():
-    start = time.time()
+def autoSaveThread():
+    """
+    Thread responsible for fetching pixels from IPR and saving them out
+    Checks hou.session.hou2vr_autoSave to see if it should keep on running
+    """
     
     img_data = getImageData()
-    log.info("\n\ninit: {}".format(time.time() - start))
-    
-    total_time = 0
+    img_path = getImgOutPath()
+    run = True
 
-    for i in range(15):
-        start = time.time()
+    while run:
+        old_pixels = img_data["pixels"]
+        updateImageData(img_data)
+
+        if img_data["pixels"] != old_pixels:
+            saveImageAsPng(img_data=img_data, path=img_path)
+        else:
+            log.info("Not saving, render hasn't changed")
         
-        updateImageData(img_data) # ~ 0.55
-        #img_data = getImageData() # ~ 0.56
-
-        meanwhile = time.time() - start
-        #log.info("update: {}".format(meanwhile))
-        total_time += meanwhile
+        try:
+            run = hou.session.hou2vr_autoSave
+        except AttributeError:
+            run = False
         
-        #saveImageAsPng(img_data=img_data)
-        #log.info("save: {}\n\n".format(time.time() - start))
+        time.sleep(auto_save_interval)
     
-    #log.info("avg time: {}".format(total_time/10.0))
+def startAutoSave():
+    """
+    Starts a separate thread which will be automatically saving out rendering image
+    It also sets global hou.session.hou2vr_autoSave variable to True, which thread is checking against to know if it should keep running
+    """
+    hou.session.hou2vr_autoSave = True
 
-def testCommand():
-    process = Thread(target=testThread, args=())
+    process = Thread(target=autoSaveThread, args=())
     process.setDaemon(True)
     process.start()
+
+def stopAutoSave():
+    """
+    Stops auto saving thread by setting hou.session.hou2vr_autoSave to False
+    """
+    hou.session.hou2vr_autoSave = False
+
+def getImgOutPath(img_name="tmp.png"):
+    """
+    Constructs a path (and creates folders if needed) relative to this repo where image will be saved, e.g.
+        tmp/juraj/tmp.png
+    
+    Returns Path object
+    """
+    root = Path(__file__).parents[2]
+    tmp = root / "tmp" / os.environ["USER"]
+    img = tmp / "tmp.png"
+    if not tmp.exists():
+        os.makedirs(str(tmp))
+    
+    return img
 
 def showInWebBrowser():
     """
     Saves image in a tmp location, launches web server if not already running and launches web-browser which displays render image in VR
     """
     root = Path(__file__).parents[2]
-    tmp = root / "tmp" / os.environ["USER"]
-    img = tmp / "tmp.png"
+
+    img = getImgOutPath()
     img_relative = img.relative_to(root)
-    if not tmp.exists():
-        os.makedirs(str(tmp))
 
     img_data = getImageData()
     
