@@ -7,8 +7,8 @@
 
   <toolshelf name="hou2vr" label="Houdini 2 VR">
     <memberTool name="save_png"/>
-    <memberTool name="show_in_browser"/>
     <memberTool name="start_auto_save"/>
+    <memberTool name="show_in_browser"/>
     <memberTool name="stop_auto_save"/>
   </toolshelf>
 

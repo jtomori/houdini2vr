@@ -75,7 +75,7 @@ AFRAME.registerComponent("stereo", {
                 el.setAttribute("material", "eye", 1);
             }
             
-            console.log(`Eye set on "${this.el.id}" to "${this.data.eye}"`);
+            //console.log(`Eye set on "${this.el.id}" to "${this.data.eye}"`);
         }
     }
 });
@@ -108,41 +108,108 @@ AFRAME.registerComponent("ui", {
         // fetch sphere entities
         var sphere_left = document.querySelector('#sphere_left');
         var sphere_right = document.querySelector('#sphere_right');
+        var link = document.querySelector('#refresh_link');
 
         var gui = new dat.GUI();
 
         // create controls object containing parameters
         var controls = {
-            gamma_correct: true,
             exposure: 0,
+            gamma_correct: true,
+            auto_refresh: false,
             reset: function() {
                 this.exposure = 0;
                 this.gamma_correct = true;
-              }
+                this.auto_refresh = false;
+            }
         };
+
+        // fetch auto_refresh param from url and set initial value in ui
+        var auto_refresh_parm = AFRAME.utils.getUrlParameter("auto_refresh");
+        if (auto_refresh_parm === "1")
+            controls.auto_refresh = true;
 
         gui.add(controls, "exposure").min(-4).max(4).name("Exposure").step(0.01).onChange(function() {
             sphere_left.setAttribute("material", "exposure", controls.exposure);
             sphere_right.setAttribute("material", "exposure", controls.exposure);
-         });
+        });
 
         gui.add(controls, "gamma_correct").name("Gamma Correct").onChange(function() {
             sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
             sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
-         });
+        });
 
-         gui.add(controls, "reset").name("Reset").onFinishChange(function() {
+        gui.add(controls, "auto_refresh").name("Auto Refresh").onChange(function() {
+            link.setAttribute("auto-refresh", "enabled", controls.auto_refresh);
+        });
+
+        gui.add(controls, "reset").name("Reset").onFinishChange(function() {
             // set properties on spheres entities
             sphere_left.setAttribute("material", "exposure", controls.exposure);
             sphere_right.setAttribute("material", "exposure", controls.exposure);
             sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
             sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
+            link.setAttribute("auto-refresh", "enabled", controls.auto_refresh);
             
             // update ui display
             for (var i in gui.__controllers) {
                 gui.__controllers[i].updateDisplay();
             }
-         });
+        });
+
+        // collapse by default
+        //gui.close();
+    }
+});
+
+AFRAME.registerComponent("auto-refresh", {
+    /*
+    Component to automatically refresh this web page every N seconds (this.refresh_rate)
+    */
+    schema: {
+        enabled:            {type: "boolean", default: "false"},
+        save_interval:      {type: "int", default: 5}
+    },
+    init: function () {
+        this.link_comp = this.el.components.link;
+        this.link_comp.data.href = window.location.pathname + window.location.search;
+
+        this.last_tick = 0;
+
+        // get auto_refresh, save_interval params from url and set data to it
+        var param_enabled = AFRAME.utils.getUrlParameter("auto_refresh");
+        if (param_enabled === "1")
+            this.data.enabled = true;
+
+        var param_interval = AFRAME.utils.getUrlParameter("save_interval");
+        if (param_interval !== "")
+            this.data.save_interval = parseInt(param_interval);
+        
+    },
+    update: function (old_data) {
+        // update this.link_comp.data.href based on changes (e.g. from UI)
+        if (this.data.enabled !== old_data.enabled)
+        {
+            // set url parm
+            var parms = new URLSearchParams(window.location.search);
+            parms.set("auto_refresh", +this.data.enabled);
+            var parms_string = parms.toString();
+            var new_url = window.location.pathname + "?" + decodeURIComponent(parms_string);
+            
+            // update window url and link data
+            window.history.pushState("object or string", "Title", new_url);
+            this.link_comp.data.href = new_url;
+        }
+    },
+    tick: function (time, timeDelta) {
+        var time_sec = Math.round(time / 1000);
+
+        if (this.data.enabled && time_sec % this.data.save_interval === 0 && this.last_tick !== time_sec)
+        {
+            this.last_tick = time_sec;
+            console.log(`Time: "${time_sec}", refreshing..`);
+            this.link_comp.navigate();
+        }
     }
 });
 
@@ -158,7 +225,7 @@ AFRAME.registerComponent("print-layers", {
 
 AFRAME.registerComponent("set-name", {
     /*
-    Sets Object3D name to ID of the entity
+    Sets Object3D name to ID of the entity, used for debugging
     */
     init: function () {
         var object_3D = this.el.object3D.children[0];

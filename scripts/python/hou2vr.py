@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 # CONFIG
 web_server_address = "127.0.0.1"
 web_server_port = 8000
-auto_save_interval = 2.0
+auto_save_interval = 5
 
 def getCameraInfo(viewer):
     """
@@ -229,7 +229,10 @@ def stopAutoSave():
     """
     Stops auto saving thread by setting hou.session.hou2vr_autoSave to False
     """
-    hou.session.hou2vr_autoSave = False
+    try:
+        hou.session.hou2vr_autoSave = False
+    except AttributeError:
+        pass
 
 def getImgOutPath(img_name="tmp.png"):
     """
@@ -257,6 +260,11 @@ def showInWebBrowser():
 
     img_data = getImageData()
     
+    try:
+        auto_refresh = int(hou.session.hou2vr_autoSave)
+    except AttributeError:
+        auto_refresh = 0
+
     if img_data:
         saveImageAsPng(img_data=img_data, path=img)
 
@@ -270,7 +278,7 @@ def showInWebBrowser():
             process.setDaemon(True)
             process.start()
         
-        webbrowser.open_new_tab(url="http://{address}:{port}/web/index.html?img_path={img}&layout={layout}&stereo={stereo}".format( address=web_server_address, port=web_server_port, img="/" + str(img_relative).replace("\\", "/"), layout=img_data["layout"],stereo=img_data["stereo"] ))
+        webbrowser.open_new_tab(url="http://{address}:{port}/web/index.html?img_path={img}&layout={layout}&stereo={stereo}&auto_refresh={auto_refresh}&save_interval={save_interval}".format( address=web_server_address, port=web_server_port, img="/" + str(img_relative).replace("\\", "/"), layout=img_data["layout"], stereo=img_data["stereo"], auto_refresh=auto_refresh, save_interval=auto_save_interval ))
 
 def encodeImage(img_data):
     """

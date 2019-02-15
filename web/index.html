@@ -4,16 +4,17 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Houdini 2 VR</title>
-        <script src="https://aframe.io/releases/0.8.0/aframe.min.js"></script>
+        <script src="https://aframe.io/releases/0.9.0/aframe.min.js"></script>
         <script src="dat.gui.min.js"></script>
         <script src="components.js"></script>
         <script src="shaders.js"></script>
     </head>
     <body>
-        <a-scene id="root_scene" background="color: black" light="defaultLightsEnabled: false" set-name ui>
-            <a-entity id="cam" camera look-controls stereo-cam set-name></a-entity>
-            <a-sky id="sphere_left" transparent="true" load-map vr-material stereo="eye: left" set-name></a-sky>
-            <a-sky id="sphere_right" transparent="true" load-map vr-material stereo="eye: right" set-name></a-sky>
+        <a-scene id="root_scene" background="color: black" light="defaultLightsEnabled: false" ui>
+            <a-entity id="cam" camera look-controls stereo-cam></a-entity>
+            <a-sky id="sphere_left" transparent="true" load-map vr-material stereo="eye: left"></a-sky>
+            <a-sky id="sphere_right" transparent="true" load-map vr-material stereo="eye: right"></a-sky>
+            <a-entity id="refresh_link" link="href: #" auto-refresh></a-entity>
         </a-scene>
     </body>
 </html>
