@@ -1,6 +1,5 @@
 # Houdini 2 VR
-## Preview Houdini VR renders in HMD
-It takes image from displayed image plane in Render View pane and displays it in your HMD.
+## Preview your Houdini mono/stereo VR renders in VR headset
 
 <br>
 
@@ -9,14 +8,14 @@ It takes image from displayed image plane in Render View pane and displays it in
     ```
     HOUDINI_PATH = &;/home/juraj/Work/houdini_hmd_preview/
     ```
-* Enable **Houdini 2 VR** shelf
+* Show **Houdini 2 VR** shelf
 
 <br>
 
-### Usage
-* **Save as PNG** - saves rendered image in *$HIP/tmp/tmp.png*
+### Shelf tools
+* **Save as PNG** - saves rendered image as *$HIP/tmp/tmp.png*
 * **Start auto save** - starts auto-saving thread at a specified time interval *(specified in `hou2vr.py`)*
-* **Show in browser** - starts a local web server if not already running, saves currently rendered image to temp directory and opens a web browser with the image
+* **Show in browser** - opens a web browser with rendering image
 * **Stop auto save** - stops auto-saving thread
 
 <br>
@@ -30,17 +29,21 @@ This tool can support any renderer plugin, which can render into Houdini's **Ren
 
 You can read about supported browsers and HMDs [here](https://webvr.rocks/).
 
-If your renderer is missing, then let me know, it can be easily added.
-
 <br>
 
 ### Future work
-* Move saving at Houdini side to a separate process - to minimze lags in Houdini UI
-    * using shared memory?
 * Send values from Houdini directly to browser (to skip image saving/loading times) and support HDR images
     * using websockets?
+    * would solve problem with loading partial frames (unfinished saving)
+* Different way of reloading image texture
+    * to address short black-outs between page reloads
+    * re-assigning a texture? (and kill its cache first)
+* Move saving at Houdini side to a separate process - to minimze lags in Houdini UI
+    * using shared memory?
 
 <br>
 
-### Limitations
+### Limitations & Bugs
+* With automatic refreshing there are short black-outs between page reloads
+* Sometimes browser loads image which is not fully written to drive, therefore it displays only a part of it
 * HDR renderings are currently clamped because of transfering them as a PNG file

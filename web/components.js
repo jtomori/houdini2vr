@@ -129,7 +129,7 @@ AFRAME.registerComponent("ui", {
         if (auto_refresh_parm === "1")
             controls.auto_refresh = true;
 
-        gui.add(controls, "exposure").min(-4).max(4).name("Exposure").step(0.01).onChange(function() {
+        gui.add(controls, "exposure").min(-8).max(8).name("Exposure").step(0.01).onChange(function() {
             sphere_left.setAttribute("material", "exposure", controls.exposure);
             sphere_right.setAttribute("material", "exposure", controls.exposure);
         });
