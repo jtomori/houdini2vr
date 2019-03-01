@@ -91,7 +91,7 @@ def getImageData():
         return None
     else:
         if viewer.planes() == ():
-            log.warning("No image planes found, is your scene rendered?")
+            log.warning("No image planes found, is your scene rendering?")
             return None
         else:
             cam_info = getCameraInfo(viewer)
@@ -145,6 +145,9 @@ def saveImageAsPng(img_data, path=None):
     img_data is a dict which is returned from getImageData()
     path is a Path object
     """
+    if not img_data:
+        return
+
     if not path:
         folder_path = Path(hou.getenv("HIP"), "tmp")
         if not folder_path.exists():
@@ -161,7 +164,7 @@ def saveImageAsPng(img_data, path=None):
     pixels = np.flipud(pixels)
 
     pixels *= 255
-    pixels = np.clip(pixels, 0, 255) # does firefox support any hdr/float image format?
+    pixels = np.clip(pixels, 0, 255)
 
     png_img = Image.fromarray(pixels.astype(np.uint8))
     png_img.save(str(img_path))
@@ -197,6 +200,9 @@ def autoSaveThread():
     img_data = getImageData()
     img_path = getImgOutPath()
     run = True
+
+    if not img_data:
+        return
 
     while run:
         old_pixels = img_data["pixels"]
