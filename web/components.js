@@ -160,14 +160,22 @@ AFRAME.registerComponent("ui", {
         });
 
         gui.add(controls, "reset").name("Reset").onFinishChange(function() {
-            // set properties on spheres entities
-            sphere_left.setAttribute("material", "exposure", controls.exposure);
-            sphere_right.setAttribute("material", "exposure", controls.exposure);
-            sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
-            sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
-            link.setAttribute("auto-refresh", "enabled", controls.auto_refresh);
-            link.setAttribute("auto-refresh", "exposure", controls.exposure);
-            link.setAttribute("auto-refresh", "gamma_correct", controls.gamma_correct);
+            // set properties on spheres entities and link
+            sphere_left.setAttribute("material", {
+                exposure: controls.exposure,
+                gamma_correct: +controls.gamma_correct
+            });
+
+            sphere_right.setAttribute("material", {
+                exposure: controls.exposure,
+                gamma_correct: +controls.gamma_correct
+            });
+
+            link.setAttribute("auto-refresh", {
+                enabled: controls.auto_refresh,
+                exposure: controls.exposure,
+                gamma_correct: controls.gamma_correct
+            });
 
             // update ui display
             for (var i in gui.__controllers) {
