@@ -1,6 +1,8 @@
 # Houdini 2 VR
 ## Preview Houdini VR renders in HMD
-It takes image from displayed image plane in Render View pane and displays it in your HMD.
+This tool takes displayed image plane in Render View pane and displays it in your VR headset. 
+
+Note that this tool can be used also without a headset. In this case it will be displayed as a panorama image.
 
 <br>
 
@@ -21,8 +23,8 @@ It takes image from displayed image plane in Render View pane and displays it in
 
 <br>
 
-### Support
-This tool can support any renderer plugin, which can render into Houdini's **Render View** pane. It has been tested with the following renderers:
+### Supported renderers, devices
+This tool can support any renderer plugin which can render into Houdini's **Render View** pane. It has been tested with the following renderers:
 * Mantra
 * Arnold
 * Redshift
@@ -30,7 +32,7 @@ This tool can support any renderer plugin, which can render into Houdini's **Ren
 
 You can read about supported browsers and HMDs [here](https://webvr.rocks/).
 
-If your renderer is missing, then let me know, it can be easily added.
+If your renderer is missing then let me know, it can be easily added.
 
 <br>
 
@@ -44,3 +46,8 @@ If your renderer is missing, then let me know, it can be easily added.
 
 ### Limitations
 * HDR renderings are currently clamped because of transfering them as a PNG file
+
+<br>
+
+### Contributing
+Feel free to contribute to this project by creating pull requests or by [buying me a beer :)](https://www.paypal.me/jtomori)

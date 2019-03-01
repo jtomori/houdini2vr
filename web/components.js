@@ -25,6 +25,8 @@ AFRAME.registerComponent("vr-material", {
         // get parameters from url
         var layout = AFRAME.utils.getUrlParameter("layout");
         var stereo = AFRAME.utils.getUrlParameter("stereo");
+        var exposure = AFRAME.utils.getUrlParameter("exposure");
+        var gamma_correct = AFRAME.utils.getUrlParameter("gamma_correct");
         
         // set shader to vr-map
         var el = this.el;
@@ -45,6 +47,13 @@ AFRAME.registerComponent("vr-material", {
         {
             el.setAttribute("material", "layout", layout);
         }
+
+        if (exposure !== "")
+            el.setAttribute("material", "exposure", parseFloat(exposure));
+        
+        if (gamma_correct !== "")
+            el.setAttribute("material", "gamma_correct", parseInt(gamma_correct));
+        
     }
 });
 
@@ -124,6 +133,11 @@ AFRAME.registerComponent("ui", {
             }
         };
 
+        // read attribs from shader
+        mat_obj = sphere_left.getAttribute("material");
+        controls.exposure = mat_obj["exposure"];
+        controls.gamma_correct = Boolean(mat_obj["gamma_correct"]);
+
         // fetch auto_refresh param from url and set initial value in ui
         var auto_refresh_parm = AFRAME.utils.getUrlParameter("auto_refresh");
         if (auto_refresh_parm === "1")
@@ -132,11 +146,13 @@ AFRAME.registerComponent("ui", {
         gui.add(controls, "exposure").min(-4).max(4).name("Exposure").step(0.01).onChange(function() {
             sphere_left.setAttribute("material", "exposure", controls.exposure);
             sphere_right.setAttribute("material", "exposure", controls.exposure);
+            link.setAttribute("auto-refresh", "exposure", controls.exposure);
         });
 
         gui.add(controls, "gamma_correct").name("Gamma Correct").onChange(function() {
             sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
             sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
+            link.setAttribute("auto-refresh", "gamma_correct", controls.gamma_correct);
         });
 
         gui.add(controls, "auto_refresh").name("Auto Refresh").onChange(function() {
@@ -150,7 +166,9 @@ AFRAME.registerComponent("ui", {
             sphere_left.setAttribute("material", "gamma_correct", +controls.gamma_correct);
             sphere_right.setAttribute("material", "gamma_correct", +controls.gamma_correct);
             link.setAttribute("auto-refresh", "enabled", controls.auto_refresh);
-            
+            link.setAttribute("auto-refresh", "exposure", controls.exposure);
+            link.setAttribute("auto-refresh", "gamma_correct", controls.gamma_correct);
+
             // update ui display
             for (var i in gui.__controllers) {
                 gui.__controllers[i].updateDisplay();
@@ -168,7 +186,9 @@ AFRAME.registerComponent("auto-refresh", {
     */
     schema: {
         enabled:            {type: "boolean", default: "false"},
-        save_interval:      {type: "int", default: 5}
+        save_interval:      {type: "int", default: 5},
+        exposure:           {type: "number", default: 0},
+        gamma_correct:      {type: "boolean", default: "true"}
     },
     init: function () {
         this.link_comp = this.el.components.link;
@@ -185,14 +205,26 @@ AFRAME.registerComponent("auto-refresh", {
         if (param_interval !== "")
             this.data.save_interval = parseInt(param_interval);
         
+        var exposure = AFRAME.utils.getUrlParameter("exposure");
+        if (exposure !== "")
+                this.data.exposure = parseFloat(exposure);
+        
+        var gamma_correct = AFRAME.utils.getUrlParameter("gamma_correct");
+        if (gamma_correct !== "")
+                this.data.gamma_correct = Boolean(parseInt(gamma_correct));
+        
     },
     update: function (old_data) {
         // update this.link_comp.data.href based on changes (e.g. from UI)
-        if (this.data.enabled !== old_data.enabled)
+        if (this.data !== old_data)
         {
             // set url parm
             var parms = new URLSearchParams(window.location.search);
+
             parms.set("auto_refresh", +this.data.enabled);
+            parms.set("gamma_correct", +this.data.gamma_correct);
+            parms.set("exposure", this.data.exposure);
+
             var parms_string = parms.toString();
             var new_url = window.location.pathname + "?" + decodeURIComponent(parms_string);
             
