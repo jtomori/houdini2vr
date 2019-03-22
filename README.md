@@ -4,6 +4,9 @@ This tool takes displayed image plane in Render View pane and displays it in you
 
 Note that this tool can be used also without a headset. In this case it will be displayed as a panorama image.
 
+Check *Houdini 2 VR* in action:
+[![Screencast](img/screen.jpg)](https://youtu.be/B5eOd3h8jAc)
+
 <br>
 
 ### Setup
