@@ -7,6 +7,8 @@ Note that this tool can be used also without a headset. In this case it will be 
 Check *Houdini 2 VR* in action:
 [![Screencast](img/screen.jpg)](https://youtu.be/B5eOd3h8jAc)
 
+And you can read [blog post](https://jurajtomori.wordpress.com/2019/03/23/houdini-2-vr/) introducing this tool.
+
 <br>
 
 ### Setup
